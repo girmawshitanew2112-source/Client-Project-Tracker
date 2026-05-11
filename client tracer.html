@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Client Project Tracker</title>
+  </head>
+  <body>
+
+    <h2>Client Project Tracker</h2>
+
+      <input type="text" id="client_name" placeholder="Client Name"><br><br>
+        <input type="text" id="project_type" placeholder="Project Type"><br><br>
+          <input type="text" id="budget" placeholder="Budget ($)"><br><br>
+
+            <button onclick="addClient()">Add Client</button>
+
+              <div id="client_list"></div>
+
+                <script>
+                    const clients = [];
+
+                        function addClient() {
+                              const name = document.getElementById("client_name").value;
+                                    const type = document.getElementById("project_type").value;
+                                          const budget = document.getElementById("budget").value;
+
+                                                const client = { name, type, budget };
+                                                      clients.push(client);
+                                                            displayClients();
+                                                                }
+
+                                                                    function displayClients() {
+                                                                          const list = document.getElementById("client_list");
+                                                                                list.innerHTML = "";
+
+                                                                                      clients.forEach((client, index) => {
+                                                                                              list.innerHTML += `
+                                                                                                        <div style="border: 1px solid black; margin: 10px; padding: 10px;">
+                                                                                                                    <p>Name: ${client.name}</p>
+                                                                                                                                <p>Project: ${client.type}</p>
+                                                                                                                                            <p>Budget: $${client.budget}</p>
+                                                                                                                                                        <button onclick="removeClient(${index})">Remove</button>
+                                                                                                                                                                  </div>
+                                                                                                                                                                          `;
+                                                                                                                                                                                });
+                                                                                                                                                                                    }
+
+                                                                                                                                                                                        function removeClient(index) {
+                                                                                                                                                                                              clients.splice(index, 1);
+                                                                                                                                                                                                    displayClients();
+                                                                                                                                                                                                        }
+                                                                                                                                                                                                          </script>
+
+                                                                                                                                                                                                          </body>
+                                                                                                                                                                                                          </html>
