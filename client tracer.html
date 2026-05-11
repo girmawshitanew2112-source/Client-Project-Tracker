@@ -1,54 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Client Project Tracker</title>
-  </head>
-  <body>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .client-card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 15px 0;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .client-card p {
+      margin: 5px 0;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .remove-btn {
+      background-color: #f44336;
+      flex: 1;
+    }
+    .remove-btn:hover {
+      background-color: #da190b;
+    }
+    .empty-state {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Client Project Tracker</h1>
+  
+  <div class="form-group">
+    <label for="client_name">Client Name:</label>
+    <input type="text" id="client_name" placeholder="Enter client name">
+  </div>
 
-    <h2>Client Project Tracker</h2>
+  <div class="form-group">
+    <label for="project_type">Project Type:</label>
+    <input type="text" id="project_type" placeholder="Enter project type">
+  </div>
 
-      <input type="text" id="client_name" placeholder="Client Name"><br><br>
-        <input type="text" id="project_type" placeholder="Project Type"><br><br>
-          <input type="text" id="budget" placeholder="Budget ($)"><br><br>
+  <div class="form-group">
+    <label for="budget">Budget ($):</label>
+    <input type="number" id="budget" placeholder="Enter budget" min="0" step="0.01">
+  </div>
 
-            <button onclick="addClient()">Add Client</button>
+  <button id="add_btn">Add Client</button>
 
-              <div id="client_list"></div>
+  <div id="client_list"></div>
 
-                <script>
-                    const clients = [];
+  <script>
+    // Initialize clients array from localStorage
+    let clients = JSON.parse(localStorage.getItem('clients')) || [];
 
-                        function addClient() {
-                              const name = document.getElementById("client_name").value;
-                                    const type = document.getElementById("project_type").value;
-                                          const budget = document.getElementById("budget").value;
+    const addBtn = document.getElementById('add_btn');
+    const clientNameInput = document.getElementById('client_name');
+    const projectTypeInput = document.getElementById('project_type');
+    const budgetInput = document.getElementById('budget');
+    const clientListDiv = document.getElementById('client_list');
 
-                                                const client = { name, type, budget };
-                                                      clients.push(client);
-                                                            displayClients();
-                                                                }
+    // Event listeners
+    addBtn.addEventListener('click', addClient);
+    [clientNameInput, projectTypeInput, budgetInput].forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addClient();
+      });
+    });
 
-                                                                    function displayClients() {
-                                                                          const list = document.getElementById("client_list");
-                                                                                list.innerHTML = "";
+    function addClient() {
+      const name = clientNameInput.value.trim();
+      const type = projectTypeInput.value.trim();
+      const budget = budgetInput.value.trim();
 
-                                                                                      clients.forEach((client, index) => {
-                                                                                              list.innerHTML += `
-                                                                                                        <div style="border: 1px solid black; margin: 10px; padding: 10px;">
-                                                                                                                    <p>Name: ${client.name}</p>
-                                                                                                                                <p>Project: ${client.type}</p>
-                                                                                                                                            <p>Budget: $${client.budget}</p>
-                                                                                                                                                        <button onclick="removeClient(${index})">Remove</button>
-                                                                                                                                                                  </div>
-                                                                                                                                                                          `;
-                                                                                                                                                                                });
-                                                                                                                                                                                    }
+      // Validation
+      if (!name || !type || !budget) {
+        alert('Please fill in all fields');
+        return;
+      }
 
-                                                                                                                                                                                        function removeClient(index) {
-                                                                                                                                                                                              clients.splice(index, 1);
-                                                                                                                                                                                                    displayClients();
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                          </script>
+      if (isNaN(budget) || budget <= 0) {
+        alert('Budget must be a valid positive number');
+        return;
+      }
 
-                                                                                                                                                                                                          </body>
-                                                                                                                                                                                                          </html>
+      const client = { id: Date.now(), name, type, budget };
+      clients.push(client);
+      
+      // Save to localStorage
+      localStorage.setItem('clients', JSON.stringify(clients));
+      
+      // Clear inputs
+      clientNameInput.value = '';
+      projectTypeInput.value = '';
+      budgetInput.value = '';
+      clientNameInput.focus();
+      
+      displayClients();
+    }
+
+    function displayClients() {
+      clientListDiv.innerHTML = '';
+
+      if (clients.length === 0) {
+        clientListDiv.innerHTML = '<div class="empty-state">No clients added yet</div>';
+        return;
+      }
+
+      clients.forEach((client) => {
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        card.innerHTML = `
+          <p><strong>Name:</strong> ${escapeHtml(client.name)}</p>
+          <p><strong>Project:</strong> ${escapeHtml(client.type)}</p>
+          <p><strong>Budget:</strong> $${parseFloat(client.budget).toFixed(2)}</p>
+          <div class="button-group">
+            <button class="remove-btn" onclick="removeClient(${client.id})">Remove</button>
+          </div>
+        `;
+        clientListDiv.appendChild(card);
+      });
+    }
+
+    function removeClient(id) {
+      if (confirm('Are you sure you want to remove this client?')) {
+        clients = clients.filter(client => client.id !== id);
+        localStorage.setItem('clients', JSON.stringify(clients));
+        displayClients();
+      }
+    }
+
+    // Security: Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Display clients on page load
+    displayClients();
+  </script>
+</body>
+</html>
